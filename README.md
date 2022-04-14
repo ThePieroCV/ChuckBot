@@ -77,6 +77,8 @@ ___
 ## 🐞 Known Bugs
 - [ ] Can't regrow Scales with **_regrow_scales** command due to *two-in-one* music scale.
 
+___
+
 ## 📝 License
 
 This project has **GPL-3.0** license. See [License](LICENSE) for more details.
