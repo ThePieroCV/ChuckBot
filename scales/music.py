@@ -6,10 +6,10 @@ from dis_snek import InteractionContext, OptionTypes, slash_command, Scale, slas
 from dis_snek.api.voice.audio import YTDLAudio
 import validators
 
-from checks.music import MusicCheck
+from checks.music import MusicCheckConnect
 
 ## COMANDOS GENERALES
-class MusicScale(MusicCheck):  # Cambiar por MusicCheck
+class MusicScaleConnect(MusicCheckConnect):
     @slash_command(name="play", description="Play and resume a song if its playing")
     @slash_option(
         name="song",
@@ -39,12 +39,6 @@ class MusicScale(MusicCheck):  # Cambiar por MusicCheck
             else:
                 await ctx.send("Introduce a song first!")
 
-    @slash_command(name="stop", description="Stops the song and disconnect")
-    async def music_stop(self, ctx: InteractionContext):
-        if ctx.voice_state:
-            await ctx.voice_state.disconnect()
-            await ctx.send("Goodbye!")
-
     @slash_command(name="pause", description="Pauses the song")
     async def music_pause(self, ctx: InteractionContext):
         if ctx.voice_state.playing:
@@ -54,5 +48,16 @@ class MusicScale(MusicCheck):  # Cambiar por MusicCheck
             await ctx.send("Not song is playing")
 
 
+class MusicScale(Scale):
+    @slash_command(name="stop", description="Stops the song and disconnect")
+    async def music_stop(self, ctx: InteractionContext):
+        if ctx.voice_state:
+            await ctx.voice_state.disconnect()
+            await ctx.send("Goodbye!")
+        else:
+            await ctx.send("Not connected yet!")
+
+
 def setup(bot):
+    MusicScaleConnect(bot)
     MusicScale(bot)

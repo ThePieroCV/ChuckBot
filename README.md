@@ -74,6 +74,9 @@ To customize ChuckBot, you can add new scales that will be recognized automatica
 
 ___
 
+## 🐞 Known Bugs
+- [ ] Can't regrow Scales with **_regrow_scales** command due to *two-in-one* music scale.
+
 ## 📝 License
 
 This project has **GPL-3.0** license. See [License](LICENSE) for more details.

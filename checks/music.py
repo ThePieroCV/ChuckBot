@@ -2,7 +2,7 @@ from dis_snek import Scale, InteractionContext, Snake
 from dis_snek.models.discord.enums import Permissions
 
 
-class MusicCheck(Scale):
+class MusicCheckConnect(Scale):
     def __init__(self, client: Snake):
         self.client = client
         self.add_scale_check(self.check)
