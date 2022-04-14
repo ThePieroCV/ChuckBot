@@ -1,5 +1,4 @@
 from dis_snek import Scale, InteractionContext, Snake
-from dis_snek.models.discord.enums import Permissions
 
 
 class MusicCheckConnect(Scale):
