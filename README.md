@@ -51,6 +51,12 @@ Install pip requirements:
 pip install -r requirements.txt
 ```
 
+Create **.env** file with content:
+```
+DISCORD_TOKEN = '#YOUR_TOKEN_HERE'
+ENV_SCOPE = 'A_SCOPE ANOTHER_SCOPE ...'
+```
+
 Finally, run the bot:
 ```console
 python bot.py
