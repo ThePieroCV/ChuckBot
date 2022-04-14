@@ -1,4 +1,5 @@
 # Chuck-Bot: A dis-snek powered discord bot
+<p align="center">
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/ThePieroCV/ChuckBot?style=for-the-badge)
 ![GitHub language count](https://img.shields.io/github/languages/count/ThePieroCV/ChuckBot?style=for-the-badge)
@@ -6,8 +7,9 @@
 ![Github open issues](https://img.shields.io/github/issues-raw/ThePieroCV/ChuckBot?style=for-the-badge)
 ![Tag Latest Release](https://img.shields.io/github/v/tag/ThePieroCV/ChuckBot?style=for-the-badge)
 
-![ChuckBot](https://media0.giphy.com/media/10YK5Hh53nC3dK/giphy.gif)
+![ChuckBot](assets/lr.gif)
 
+<p>
 > ChuckBot is a discord bot that brings you different kind of options to make your life easier. Powered by Dis-Snek, this bot is the real snake shady!
 
 ___
