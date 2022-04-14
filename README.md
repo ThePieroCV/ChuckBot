@@ -37,7 +37,7 @@ ___
 In order to install ChuckBot, follow the next steps:
 
 Clone the repo:
-```
+```console
 git clone https://github.com/ThePieroCV/ChuckBot.git
 ```
 
@@ -71,5 +71,3 @@ ___
 ## 📝 License
 
 This project has **GPL-3.0** license. See [License](LICENSE) for more details.
-
-[⬆ Go back top](#ChuckBot)<br>
