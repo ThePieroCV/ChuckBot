@@ -17,7 +17,7 @@ Goals to reach on next updates:
 
 - [x] Scale (Cogs) administrator 
 - [x] Music player
-- [ ] Queue system for music player
+- [x] Queue system for music player
 - [ ] Spotify - Youtube integration
 - [ ] Pomodoro Tool
 
