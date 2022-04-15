@@ -1,6 +1,5 @@
 import re
 import os
-import urllib
 from asyncio import Queue
 
 from dis_snek import (
@@ -16,6 +15,7 @@ from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import validators
+from youtubesearchpython.__future__ import VideosSearch
 
 load_dotenv()
 SPOTIFY_CLIENT = os.getenv("SPOTIFY_CLIENT")
@@ -56,7 +56,7 @@ class MusicScale(Scale):
                 elif ctx.voice_state and ctx.voice_state.playing:
                     await ctx.send("It is already playing the song!")
                 else:
-                    if ctx.voice_state:
+                    if ctx.responded:
                         await ctx.channel.send("Introduce a song first!")
                     else:
                         await ctx.send("Introduce a song first!")
@@ -93,6 +93,14 @@ class MusicScale(Scale):
         else:
             await ctx.send("Not song is playing")
 
+    @slash_command(name="skip", description="Skips the song")
+    async def music_skip(self, ctx: InteractionContext):
+        if self.queue:
+            await ctx.voice_state.stop()
+            await ctx.send("Skipping!")
+        else:
+            await ctx.send("Not music in queue!")
+
     @slash_command(name="stop", description="Stops the song and disconnect")
     async def music_stop(self, ctx: InteractionContext):
         if ctx.voice_state:
@@ -118,11 +126,9 @@ class MusicScale(Scale):
         while self.queue:
             type, audio = self.queue[0]
             if type == "query":
-                html = urllib.request.urlopen(
-                    "https://www.youtube.com/results?search_query=" + audio
-                )
-                video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
-                audio = "https://www.youtube.com/watch?v=" + video_ids[0]
+                videosSearch = VideosSearch(audio + " official audio", limit=1)
+                videosResult = (await videosSearch.next())["result"][0]
+                audio = videosResult["link"]
                 type = "url"
             if type == "url":
                 audio = await YTDLAudio.from_url(audio)
@@ -151,11 +157,9 @@ class MusicScale(Scale):
                         (
                             (
                                 "query",
-                                (
-                                    i["track"]["artists"][0]["name"]
-                                    + "+"
-                                    + i["track"]["name"]
-                                ).replace(" ", "+"),
+                                i["track"]["artists"][0]["name"]
+                                + " "
+                                + i["track"]["name"],
                             )
                         )
                         for i in response["items"]
@@ -170,12 +174,9 @@ class MusicScale(Scale):
             if is_playing:
                 await ctx.channel.send(f"Added {audio.entry['title']} to queue")
         else:
-            html = urllib.request.urlopen(
-                "https://www.youtube.com/results?search_query="
-                + query.replace(" ", "+")
-            )
-            video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
-            url = "https://www.youtube.com/watch?v=" + video_ids[0]
+            videosSearch = VideosSearch(query, limit=1)
+            videosResult = (await videosSearch.next())["result"][0]
+            url = videosResult["link"]
             audio = await YTDLAudio.from_url(url)
             self.queue.append(("audio", audio))
             if is_playing:
