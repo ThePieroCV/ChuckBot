@@ -60,6 +60,37 @@ class MusicScale(Scale):
                     else:
                         await ctx.send("Introduce a song first!")
 
+    @slash_command(
+        name="force-play",
+        description="Forces to play a song, clearing the current queue",
+    )
+    @slash_option(
+        name="song",
+        description="Song's name",
+        required=True,
+        opt_type=OptionTypes.STRING,
+    )
+    async def music_force_play(self, ctx: InteractionContext, song: str = ""):
+        connected = await self.connect(ctx)
+        if connected:
+            self.queue = []
+            if not ctx.voice_state.stopped:
+                await ctx.voice_state.stop()
+            if ctx.responded:
+                await ctx.channel.send(f"Looking for {song}...")
+            else:
+                await ctx.send(f"Looking for {song}...")
+            if not validators.url(song):
+                search_keyword = song.replace(" ", "+")
+                html = urllib.request.urlopen(
+                    "https://www.youtube.com/results?search_query=" + search_keyword
+                )
+                video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
+                song = "https://www.youtube.com/watch?v=" + video_ids[0]
+            audio = await YTDLAudio.from_url(song)
+            self.queue.append(audio)
+            await self.play_queue(ctx)
+
     @slash_command(name="pause", description="Pauses the song")
     async def music_pause(self, ctx: InteractionContext):
         if self.queue and ctx.voice_state.playing:
@@ -96,7 +127,7 @@ class MusicScale(Scale):
             audio = self.queue[0]
             await ctx.channel.send(f"Now playing {audio.entry['title']}")
             await ctx.voice_state.play(audio)
-            _ = self.queue.pop(0)
+            _ = self.queue.pop(0) if self.queue else None
 
 
 def setup(bot):
