@@ -104,6 +104,7 @@ class MusicScale(Scale):
     @slash_command(name="stop", description="Stops the song and disconnect")
     async def music_stop(self, ctx: InteractionContext):
         if ctx.voice_state:
+            self.queue = []
             await ctx.voice_state.disconnect()
             await ctx.send("Goodbye!")
         else:
