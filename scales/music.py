@@ -12,9 +12,22 @@ from dis_snek import (
     Snake,
 )
 from dis_snek.api.voice.audio import YTDLAudio
+from dotenv import load_dotenv
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
 import validators
 
-## COMANDOS GENERALES
+load_dotenv()
+SPOTIFY_CLIENT = os.getenv("SPOTIFY_CLIENT")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+
+sp = spotipy.Spotify(
+    auth_manager=SpotifyClientCredentials(
+        client_id=SPOTIFY_CLIENT, client_secret=SPOTIFY_CLIENT_SECRET
+    )
+)
+
+
 class MusicScale(Scale):
     def __init__(self, bot: Snake):
         super().__init__()
@@ -35,19 +48,7 @@ class MusicScale(Scale):
                     await ctx.channel.send(f"Looking for {song}...")
                 else:
                     await ctx.send(f"Looking for {song}...")
-                if not validators.url(song):
-                    search_keyword = song.replace(" ", "+")
-                    html = urllib.request.urlopen(
-                        "https://www.youtube.com/results?search_query=" + search_keyword
-                    )
-                    video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
-                    song = "https://www.youtube.com/watch?v=" + video_ids[0]
-                audio = await YTDLAudio.from_url(song)
-                self.queue.append(audio)
-                if len(self.queue) == 1:
-                    await self.play_queue(ctx)
-                else:
-                    await ctx.channel.send(f"Added to queue {audio.entry['title']}")
+                await self.add_queries(ctx, song)
             else:
                 if ctx.voice_state and ctx.voice_state.paused:
                     ctx.voice_state.resume()
@@ -80,16 +81,7 @@ class MusicScale(Scale):
                 await ctx.channel.send(f"Looking for {song}...")
             else:
                 await ctx.send(f"Looking for {song}...")
-            if not validators.url(song):
-                search_keyword = song.replace(" ", "+")
-                html = urllib.request.urlopen(
-                    "https://www.youtube.com/results?search_query=" + search_keyword
-                )
-                video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
-                song = "https://www.youtube.com/watch?v=" + video_ids[0]
-            audio = await YTDLAudio.from_url(song)
-            self.queue.append(audio)
-            await self.play_queue(ctx)
+            await self.add_queries(ctx, song)
 
     @slash_command(name="pause", description="Pauses the song")
     async def music_pause(self, ctx: InteractionContext):
@@ -124,10 +116,72 @@ class MusicScale(Scale):
 
     async def play_queue(self, ctx: InteractionContext):
         while self.queue:
-            audio = self.queue[0]
+            type, audio = self.queue[0]
+            if type == "query":
+                html = urllib.request.urlopen(
+                    "https://www.youtube.com/results?search_query=" + audio
+                )
+                video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
+                audio = "https://www.youtube.com/watch?v=" + video_ids[0]
+                type = "url"
+            if type == "url":
+                audio = await YTDLAudio.from_url(audio)
             await ctx.channel.send(f"Now playing {audio.entry['title']}")
             await ctx.voice_state.play(audio)
             _ = self.queue.pop(0) if self.queue else None
+
+    async def add_queries(self, ctx: InteractionContext, query: str):
+        is_playing = len(self.queue)
+        if validators.url(query) and ("spotify" in query):
+            items = []
+            offset = 0
+            spid = "spotify:playlist:" + query.split("/")[-1].split("?")[0]
+            while True:
+                response = sp.playlist_items(
+                    spid,
+                    offset=offset,
+                    fields="items.track.name,items.track.artists.name",
+                )
+
+                if len(response["items"]) == 0:
+                    break
+
+                items.extend(
+                    [
+                        (
+                            (
+                                "query",
+                                (
+                                    i["track"]["artists"][0]["name"]
+                                    + "+"
+                                    + i["track"]["name"]
+                                ).replace(" ", "+"),
+                            )
+                        )
+                        for i in response["items"]
+                    ]
+                )
+                offset = offset + len(response["items"])
+            self.queue.extend(items)
+            await ctx.channel.send(f"Added playlist to queue")
+        elif validators.url(query):
+            audio = await YTDLAudio.from_url(query)
+            self.queue.append(("audio", audio))
+            if is_playing:
+                await ctx.channel.send(f"Added {audio.entry['title']} to queue")
+        else:
+            html = urllib.request.urlopen(
+                "https://www.youtube.com/results?search_query="
+                + query.replace(" ", "+")
+            )
+            video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
+            url = "https://www.youtube.com/watch?v=" + video_ids[0]
+            audio = await YTDLAudio.from_url(url)
+            self.queue.append(("audio", audio))
+            if is_playing:
+                await ctx.channel.send(f"Added {audio.entry['title']} to queue")
+        if not is_playing:
+            await self.play_queue(ctx)
 
 
 def setup(bot):

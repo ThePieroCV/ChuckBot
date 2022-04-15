@@ -18,7 +18,7 @@ Goals to reach on next updates:
 - [x] Scale (Cogs) administrator 
 - [x] Music player
 - [x] Queue system for music player
-- [ ] Spotify - Youtube integration
+- [x] Spotify - Youtube integration
 - [ ] Pomodoro Tool
 
 ___
@@ -29,7 +29,7 @@ Before getting up this bot, be aware of the next :
 
 * Dis-snek uses Python 3.10.x, it is recommended to use virtual environments.
 * You need FFMPEG installed (On Path, or then pasted on local cloned repo).
-* Read and internalize how dis-snek works on [ Dis-snek documentation](https://dis-snek.readthedocs.io).
+* Read and internalize how dis-snek works on [Dis-snek documentation](https://dis-snek.readthedocs.io).
 
 ___
 ## 🚀 Installing Chuck-Bot
@@ -55,6 +55,8 @@ Create **.env** file with content:
 ```
 DISCORD_TOKEN = '#YOUR_TOKEN_HERE'
 ENV_SCOPE = 'A_SCOPE ANOTHER_SCOPE ...'
+SPOTIFY_CLIENT = 'CLIENT_ID'
+SPOTIFY_CLIENT_SECRET = 'CLIENT_SECRET'
 ```
 
 Finally, run the bot:
@@ -68,6 +70,7 @@ ___
 Chuckbot now supports:
 - [X] Scales (Cogs) manager.
 - [X] Music player (Youtube).
+- [X] Music player (Spotify playlists)
 
 
 To customize ChuckBot, you can add new scales that will be recognized automatically. You can review other premade *.py* Scales to customize it.
@@ -75,7 +78,7 @@ To customize ChuckBot, you can add new scales that will be recognized automatica
 ___
 
 ## 🐞 Known Bugs
-- [ ] Can't regrow Scales with **_regrow_scales** command due to *two-in-one* music scale.
+- [X] Can't regrow Scales with **_regrow_scales** command due to *two-in-one* music scale. **Removed two-in-one scales**.
 
 ___
 
