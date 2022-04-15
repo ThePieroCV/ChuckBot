@@ -126,7 +126,7 @@ class MusicScale(Scale):
         while self.queue:
             type, audio = self.queue[0]
             if type == "query":
-                videosSearch = VideosSearch(audio + " official audio", limit=1)
+                videosSearch = VideosSearch(audio, limit=1)
                 videosResult = (await videosSearch.next())["result"][0]
                 audio = videosResult["link"]
                 type = "url"
@@ -159,7 +159,8 @@ class MusicScale(Scale):
                                 "query",
                                 i["track"]["artists"][0]["name"]
                                 + " "
-                                + i["track"]["name"],
+                                + i["track"]["name"]
+                                + " lyrics",
                             )
                         )
                         for i in response["items"]

@@ -2,3 +2,4 @@ dis_snek[audio]==8.0.0
 python-dotenv==0.20.0
 spotipy==2.19.0
 validators==0.18.2
+youtube_search_python==1.6.4
