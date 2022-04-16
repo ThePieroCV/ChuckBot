@@ -1,6 +1,6 @@
-import re
+import copy
 import os
-from asyncio import Queue
+from shutil import which
 
 from dis_snek import (
     InteractionContext,
@@ -9,6 +9,7 @@ from dis_snek import (
     Scale,
     slash_option,
     Snake,
+    SlashCommandChoice,
 )
 from dis_snek.api.voice.audio import YTDLAudio
 from dotenv import load_dotenv
@@ -32,6 +33,7 @@ class MusicScale(Scale):
     def __init__(self, bot: Snake):
         super().__init__()
         self.queue: list = []
+        self.repeat: int = 0
 
     @slash_command(name="play", description="Play and resume a song if its playing")
     @slash_option(
@@ -110,6 +112,31 @@ class MusicScale(Scale):
         else:
             await ctx.send("Not connected yet!")
 
+    @slash_command(name="repeat", description="Repeats the song or queue")
+    @slash_option(
+        name="mode",
+        description="Repeat's mode",
+        required=True,
+        opt_type=OptionTypes.INTEGER,
+        choices=[
+            SlashCommandChoice(name="No-Repeat", value=0),
+            SlashCommandChoice(name="Repeat-Queue", value=1),
+            SlashCommandChoice(name="Repeat-Current-Song", value=2),
+        ],
+    )
+    async def music_repeat(self, ctx: InteractionContext, mode: int):
+        if self.repeat == mode:
+            await ctx.send("Repeat mode already set")
+        else:
+            self.repeat = mode
+            match mode:
+                case 0:
+                    await ctx.send("Repeat mode disabled")
+                case 1:
+                    await ctx.send("Repeat mode activated on current queue")
+                case 2:
+                    await ctx.send("Repeat mode activated on current song")
+
     async def connect(self, ctx: InteractionContext):
         if ctx.author.voice:
             if (
@@ -135,7 +162,13 @@ class MusicScale(Scale):
                 audio = await YTDLAudio.from_url(audio)
             await ctx.channel.send(f"Now playing {audio.entry['title']}")
             await ctx.voice_state.play(audio)
-            _ = self.queue.pop(0) if self.queue else None
+            match self.repeat:
+                case 0:
+                    _ = self.queue.pop(0) if self.queue else None
+                case 1:
+                    self.queue = self.queue[1:] + [self.queue[0]]
+                case 2:
+                    pass
 
     async def add_queries(self, ctx: InteractionContext, query: str):
         is_playing = len(self.queue)
@@ -170,19 +203,13 @@ class MusicScale(Scale):
                 offset = offset + len(response["items"])
             self.queue.extend(items)
             await ctx.channel.send(f"Added playlist to queue")
-        elif validators.url(query):
-            audio = await YTDLAudio.from_url(query)
-            self.queue.append(("audio", audio))
-            if is_playing:
-                await ctx.channel.send(f"Added {audio.entry['title']} to queue")
         else:
             videosSearch = VideosSearch(query, limit=1)
             videosResult = (await videosSearch.next())["result"][0]
             url = videosResult["link"]
-            audio = await YTDLAudio.from_url(url)
-            self.queue.append(("audio", audio))
+            self.queue.append(("url", url))
             if is_playing:
-                await ctx.channel.send(f"Added {audio.entry['title']} to queue")
+                await ctx.channel.send(f"Added {videosResult['title']} to queue")
         if not is_playing:
             await self.play_queue(ctx)
 
