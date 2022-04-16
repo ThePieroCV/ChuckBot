@@ -18,6 +18,8 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import validators
 from youtubesearchpython.__future__ import VideosSearch
 
+from collect.queue import ChuckQueue
+
 load_dotenv()
 SPOTIFY_CLIENT = os.getenv("SPOTIFY_CLIENT")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
@@ -32,8 +34,9 @@ sp = spotipy.Spotify(
 class MusicScale(Scale):
     def __init__(self, bot: Snake):
         super().__init__()
-        self.queue: list = []
+        self.queue: ChuckQueue = ChuckQueue([])
         self.repeat: int = 0
+        self.shuffled: bool = False
 
     @slash_command(name="play", description="Play and resume a song if its playing")
     @slash_option(
@@ -76,7 +79,8 @@ class MusicScale(Scale):
     async def music_force_play(self, ctx: InteractionContext, song: str = ""):
         connected = await self.connect(ctx)
         if connected:
-            self.queue = []
+            self.queue = ChuckQueue([])
+            self.shuffled = False
             if not ctx.voice_state.stopped:
                 await ctx.voice_state.stop()
             if ctx.responded:
@@ -106,7 +110,8 @@ class MusicScale(Scale):
     @slash_command(name="stop", description="Stops the song and disconnect")
     async def music_stop(self, ctx: InteractionContext):
         if ctx.voice_state:
-            self.queue = []
+            self.queue = ChuckQueue([])
+            self.shuffled = False
             await ctx.voice_state.disconnect()
             await ctx.send("Goodbye!")
         else:
@@ -137,6 +142,21 @@ class MusicScale(Scale):
                 case 2:
                     await ctx.send("Repeat mode activated on current song")
 
+    @slash_command(name="shuffle", description="Shuffle and reshuffle queue")
+    async def music_shuffle(self, ctx: InteractionContext):
+        self.shuffled = True
+        self.queue.shuffle()
+        await ctx.send("Shuffling queue")
+
+    @slash_command(name="unshuffle", description="Unshuffle queue")
+    async def music_shuffle(self, ctx: InteractionContext):
+        if not self.shuffled:
+            await ctx.send("Shuffling already disabled")
+        else:
+            self.shuffled = False
+            self.queue.unshuffle()
+            await ctx.send("Shuffling disabled")
+
     async def connect(self, ctx: InteractionContext):
         if ctx.author.voice:
             if (
@@ -164,11 +184,9 @@ class MusicScale(Scale):
             await ctx.voice_state.play(audio)
             match self.repeat:
                 case 0:
-                    _ = self.queue.pop(0) if self.queue else None
+                    _ = self.queue.next() if self.queue else None
                 case 1:
-                    self.queue = self.queue[1:] + [self.queue[0]]
-                case 2:
-                    pass
+                    _ = self.queue.rotate()
 
     async def add_queries(self, ctx: InteractionContext, query: str):
         is_playing = len(self.queue)
@@ -194,7 +212,7 @@ class MusicScale(Scale):
                                 i["track"]["artists"][0]["name"]
                                 + " "
                                 + i["track"]["name"]
-                                + " lyrics",
+                                + " audio",
                             )
                         )
                         for i in response["items"]
