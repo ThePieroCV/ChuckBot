@@ -37,6 +37,7 @@ class MusicScale(Scale):
         self.queue: ChuckQueue = ChuckQueue([])
         self.repeat: int = 0
         self.shuffled: bool = False
+        self.now_playing = ""
 
     @slash_command(name="play", description="Play and resume a song if its playing")
     @slash_option(
@@ -109,7 +110,7 @@ class MusicScale(Scale):
 
     @slash_command(name="stop", description="Stops the song and disconnect")
     async def music_stop(self, ctx: InteractionContext):
-        if ctx.voice_state:
+        if ctx.voice_state and not ctx.voice_state.stopped:
             self.queue = ChuckQueue([])
             self.shuffled = False
             self.repeat = 0
@@ -158,6 +159,18 @@ class MusicScale(Scale):
             self.queue.unshuffle()
             await ctx.send("Shuffling disabled")
 
+    @slash_command(
+        name="now-playing", description="See info of what's playing right now"
+    )
+    async def music_np(self, ctx: InteractionContext):
+        if self.queue:
+            if ctx.voice_state.paused:
+                await ctx.send(f"It is paused {self.now_playing} right now!")
+            else:
+                await ctx.send(f"It is playing {self.now_playing} right now!")
+        else:
+            await ctx.send(f"No song is playing")
+
     async def connect(self, ctx: InteractionContext):
         if ctx.author.voice:
             if (
@@ -181,7 +194,8 @@ class MusicScale(Scale):
                 type = "url"
             if type == "url":
                 audio = await YTDLAudio.from_url(audio)
-            await ctx.channel.send(f"Now playing {audio.entry['title']}")
+            self.now_playing = audio.entry["title"]
+            await ctx.channel.send(f"Now playing {self.now_playing}")
             await ctx.voice_state.play(audio)
             match self.repeat:
                 case 0:
@@ -190,6 +204,7 @@ class MusicScale(Scale):
                     _ = self.queue.rotate()
         self.queue = ChuckQueue([])
         self.shuffled = False
+        self.now_playing = ""
 
     async def add_queries(self, ctx: InteractionContext, query: str):
         is_playing = len(self.queue)
