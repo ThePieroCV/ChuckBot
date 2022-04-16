@@ -150,7 +150,7 @@ class MusicScale(Scale):
         await ctx.send("Shuffling queue")
 
     @slash_command(name="unshuffle", description="Unshuffle queue")
-    async def music_shuffle(self, ctx: InteractionContext):
+    async def music_unshuffle(self, ctx: InteractionContext):
         if not self.shuffled:
             await ctx.send("Shuffling already disabled")
         else:
