@@ -112,6 +112,7 @@ class MusicScale(Scale):
         if ctx.voice_state:
             self.queue = ChuckQueue([])
             self.shuffled = False
+            self.repeat = 0
             await ctx.voice_state.disconnect()
             await ctx.send("Goodbye!")
         else:

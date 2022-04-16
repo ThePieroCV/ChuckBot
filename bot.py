@@ -9,7 +9,7 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 SCOPE = os.getenv("ENV_SCOPE").split(" ")
 
 ## INSTANCIAR EL BOT
-bot = Snake(intents=Intents.DEFAULT, default_prefix="!!", debug_scope=SCOPE[0])
+bot = Snake(intents=Intents.DEFAULT, debug_scope=SCOPE[0])
 
 bot.grow_scale("scales.admin")
 ## CORREMOS EL BOT
