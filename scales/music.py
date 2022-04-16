@@ -187,6 +187,8 @@ class MusicScale(Scale):
                     _ = self.queue.next() if self.queue else None
                 case 1:
                     _ = self.queue.rotate()
+        self.queue = ChuckQueue([])
+        self.shuffled = False
 
     async def add_queries(self, ctx: InteractionContext, query: str):
         is_playing = len(self.queue)
