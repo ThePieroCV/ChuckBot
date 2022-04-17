@@ -46,16 +46,18 @@ class ChuckQueue(UserList):
         return self.data
 
     def shuffle(self):
-        self.data = [self.data[0]] + sample(self.data[1:], len(self.data[1:]))
-        self.shuffled = True
+        if self.data:
+            self.data = [self.data[0]] + sample(self.data[1:], len(self.data[1:]))
+            self.shuffled = True
         return self.data
 
     def unshuffle(self):
-        idx = self.data[0][0]
-        self.data.sort()
-        _ = self.rotate(idx)
-        self._reset_index()
-        self.shuffled = False
+        if self.data:
+            idx = self.data[0][0]
+            self.data.sort()
+            _ = self.rotate(idx)
+            self._reset_index()
+            self.shuffled = False
         return self.data
 
     def __getitem__(self, idx: int):

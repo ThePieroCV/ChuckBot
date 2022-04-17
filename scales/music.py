@@ -11,6 +11,7 @@ from dis_snek import (
     Snake,
     SlashCommandChoice,
 )
+from dis_snek.ext.paginators import Paginator
 from dis_snek.api.voice.audio import YTDLAudio
 from dotenv import load_dotenv
 import spotipy
@@ -38,6 +39,7 @@ class MusicScale(Scale):
         self.repeat: int = 0
         self.shuffled: bool = False
         self.now_playing = ""
+        self.paginator: Paginator = None
 
     @slash_command(name="play", description="Play and resume a song if its playing")
     @slash_option(
@@ -110,9 +112,10 @@ class MusicScale(Scale):
 
     @slash_command(name="stop", description="Stops the song and disconnect")
     async def music_stop(self, ctx: InteractionContext):
-        if ctx.voice_state and not ctx.voice_state.stopped:
+        if ctx.voice_state:
             self.queue = ChuckQueue([])
             self.shuffled = False
+            self.now_playing = ""
             self.repeat = 0
             await ctx.voice_state.disconnect()
             await ctx.send("Goodbye!")
@@ -143,21 +146,29 @@ class MusicScale(Scale):
                     await ctx.send("Repeat mode activated on current queue")
                 case 2:
                     await ctx.send("Repeat mode activated on current song")
+            await self.reset_paginator()
 
     @slash_command(name="shuffle", description="Shuffle and reshuffle queue")
     async def music_shuffle(self, ctx: InteractionContext):
-        self.shuffled = True
-        self.queue.shuffle()
-        await ctx.send("Shuffling queue")
+        if self.queue:
+            self.shuffled = True
+            self.queue.shuffle()
+            await ctx.send("Shuffling queue")
+        else:
+            await ctx.send(f"A queue is not playing")
 
     @slash_command(name="unshuffle", description="Unshuffle queue")
     async def music_unshuffle(self, ctx: InteractionContext):
-        if not self.shuffled:
-            await ctx.send("Shuffling already disabled")
+        if self.queue:
+            if not self.shuffled:
+                await ctx.send("Shuffling already disabled")
+            else:
+                self.shuffled = False
+                self.queue.unshuffle()
+                await ctx.send("Shuffling disabled")
+                await self.reset_paginator()
         else:
-            self.shuffled = False
-            self.queue.unshuffle()
-            await ctx.send("Shuffling disabled")
+            await ctx.send(f"A queue is not playing")
 
     @slash_command(
         name="now-playing", description="See info of what's playing right now"
@@ -170,6 +181,34 @@ class MusicScale(Scale):
                 await ctx.send(f"It is playing {self.now_playing} right now!")
         else:
             await ctx.send(f"No song is playing")
+
+    @slash_command(
+        name="queue-show", description="Show the current queue and state of it"
+    )
+    async def music_qs(self, ctx: InteractionContext):
+        if self.queue:
+            match self.repeat:
+                case 0:
+                    string_repeat = "No Repeat"
+                case 1:
+                    string_repeat = "Repeating Queue"
+                case 2:
+                    string_repeat = "Repeating Song"
+            string_playing = "Paused" if ctx.voice_state.paused else "Playing"
+            string_shuffled = "ON" if self.shuffled else "OFF"
+            string_init = f"🔸**Repeat:** ***{string_repeat}*** 🔸**Shuffled:** ***{string_shuffled}*** 🔸**State:** ***{string_playing}***\n"
+            string_current = f"**Current song: {self.now_playing}\n**"
+            string = (
+                "🔹" + "\n🔹 ".join(tuple(zip(*self.queue))[2][1:])
+                if len(self.queue) > 1
+                else ""
+            )
+            self.paginator = Paginator.create_from_string(
+                self.bot, string_init + string_current + string, page_size=600
+            )
+            await self.paginator.send(ctx)
+        else:
+            await ctx.send(f"A queue is not playing")
 
     async def connect(self, ctx: InteractionContext):
         if ctx.author.voice:
@@ -186,7 +225,7 @@ class MusicScale(Scale):
 
     async def play_queue(self, ctx: InteractionContext):
         while self.queue:
-            type, audio = self.queue[0]
+            type, audio, title = self.queue[0]
             if type == "query":
                 videosSearch = VideosSearch(audio, limit=1)
                 videosResult = (await videosSearch.next())["result"][0]
@@ -194,7 +233,7 @@ class MusicScale(Scale):
                 type = "url"
             if type == "url":
                 audio = await YTDLAudio.from_url(audio)
-            self.now_playing = audio.entry["title"]
+            self.now_playing = title
             await ctx.channel.send(f"Now playing {self.now_playing}")
             await ctx.voice_state.play(audio)
             match self.repeat:
@@ -202,9 +241,11 @@ class MusicScale(Scale):
                     _ = self.queue.next() if self.queue else None
                 case 1:
                     _ = self.queue.rotate()
+            await self.reset_paginator()
         self.queue = ChuckQueue([])
         self.shuffled = False
         self.now_playing = ""
+        self.repeat = 0
 
     async def add_queries(self, ctx: InteractionContext, query: str):
         is_playing = len(self.queue)
@@ -231,6 +272,11 @@ class MusicScale(Scale):
                                 + " "
                                 + i["track"]["name"]
                                 + " audio",
+                                i["track"]["name"]
+                                + " "
+                                + "**"
+                                + i["track"]["artists"][0]["name"]
+                                + "**",
                             )
                         )
                         for i in response["items"]
@@ -239,15 +285,27 @@ class MusicScale(Scale):
                 offset = offset + len(response["items"])
             self.queue.extend(items)
             await ctx.channel.send(f"Added playlist to queue")
+            await self.reset_paginator()
         else:
             videosSearch = VideosSearch(query, limit=1)
-            videosResult = (await videosSearch.next())["result"][0]
-            url = videosResult["link"]
-            self.queue.append(("url", url))
-            if is_playing:
-                await ctx.channel.send(f"Added {videosResult['title']} to queue")
+            vr_root = await videosSearch.next()
+            if vr_root:
+                videosResult = ["result"][0]
+                url = videosResult["link"]
+                self.queue.append(("url", url, videosResult["title"]))
+                if is_playing:
+                    await ctx.channel.send(f"Added {videosResult['title']} to queue")
+                await self.reset_paginator()
+            else:
+                ctx.channel.send(f"The song {query} was not found")
         if not is_playing:
             await self.play_queue(ctx)
+
+    async def reset_paginator(self):
+        if self.paginator:
+            await self.paginator.stop()
+            await self.paginator.message.edit("***Queue Changed***")
+            self.paginator = None
 
 
 def setup(bot):
