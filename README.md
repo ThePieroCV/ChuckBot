@@ -19,6 +19,7 @@ Goals to reach on next updates:
 - [x] Music player
 - [x] Queue system for music player
 - [x] Spotify - Youtube integration
+- [x] Genius Integration - Lyrics
 - [ ] Pomodoro Tool
 
 ___
@@ -57,6 +58,7 @@ DISCORD_TOKEN = '#YOUR_TOKEN_HERE'
 ENV_SCOPE = 'A_SCOPE ANOTHER_SCOPE ...'
 SPOTIFY_CLIENT = 'CLIENT_ID'
 SPOTIFY_CLIENT_SECRET = 'CLIENT_SECRET'
+GENIUS_TOKEN = 'GENIUS_TOKEN'
 ```
 
 Finally, run the bot:
@@ -71,6 +73,7 @@ Chuckbot now supports:
 - [X] Scales (Cogs) manager.
 - [X] Music player (Youtube).
 - [X] Music player (Spotify playlists)
+- [X] Genius lyrics
 
 
 To customize ChuckBot, you can add new scales that will be recognized automatically. You can review other premade *.py* Scales to customize it.
@@ -79,6 +82,7 @@ ___
 
 ## 🐞 Known Bugs
 - [X] **Solved**. Can't regrow Scales with **_regrow_scales** command due to *two-in-one* music scale. **Removed two-in-one scales**.
+- [ ] Genius lyrics search system is not totally accurate, but it works on most of the songs tested.
 
 ___
 
