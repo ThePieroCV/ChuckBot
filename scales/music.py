@@ -1,6 +1,4 @@
-import copy
 import os
-from shutil import which
 
 from dis_snek import (
     InteractionContext,
@@ -288,16 +286,16 @@ class MusicScale(Scale):
             await self.reset_paginator()
         else:
             videosSearch = VideosSearch(query, limit=1)
-            vr_root = await videosSearch.next()
+            vr_root = (await videosSearch.next())["result"]
             if vr_root:
-                videosResult = ["result"][0]
+                videosResult = vr_root[0]
                 url = videosResult["link"]
                 self.queue.append(("url", url, videosResult["title"]))
                 if is_playing:
                     await ctx.channel.send(f"Added {videosResult['title']} to queue")
                 await self.reset_paginator()
             else:
-                ctx.channel.send(f"The song {query} was not found")
+                await ctx.channel.send(f"The song {query} was not found")
         if not is_playing:
             await self.play_queue(ctx)
 
