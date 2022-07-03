@@ -1,12 +1,12 @@
-from dis_snek import Scale, InteractionContext, Snake
-from dis_snek.models.discord.enums import Permissions
+from naff import Extension, InteractionContext, Extension
+from naff.models.discord.enums import Permissions
 
 
-class AdminCheck(Scale):
-    def __init__(self, client: Snake):
+class AdminCheck(Extension):
+    def __init__(self, client: Extension):
         self.client = client
-        self.add_scale_check(self.check)
-        self.add_scale_postrun(self.sync_interactions)
+        self.add_extension_prerun(self.check)
+        self.add_extension_postrun(self.sync_interactions)
 
     async def check(self, ctx: InteractionContext) -> bool:
         member = ctx.author

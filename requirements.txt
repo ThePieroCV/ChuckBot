@@ -1,5 +1,7 @@
-dis_snek[audio]==8.0.0
+lyricsgenius==3.0.1
+naff[voice]==1.4.1
 python-dotenv==0.20.0
-spotipy==2.19.0
-validators==0.18.2
-youtube_search_python==1.6.4
+spotipy==2.20.0
+validators==0.20.0
+youtube_search_python==1.6.6
+yt_dlp==2022.6.29

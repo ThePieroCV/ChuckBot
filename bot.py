@@ -1,6 +1,6 @@
 import os
 
-from dis_snek import Snake, Intents
+from naff import Client, Intents
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,8 +9,8 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 SCOPE = os.getenv("ENV_SCOPE").split(" ")
 
 ## INSTANCIAR EL BOT
-bot = Snake(intents=Intents.DEFAULT, debug_scope=SCOPE[0])
+bot = Client(intents=Intents.DEFAULT, debug_scope=SCOPE[0], sync_interactions=True)
 
-bot.grow_scale("scales.admin")
+bot.load_extension("extensions.admin")
 ## CORREMOS EL BOT
 bot.start(TOKEN)
