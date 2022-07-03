@@ -1,4 +1,4 @@
-# Chuck-Bot: A dis-snek powered discord bot
+# Chuck-Bot: A NAFF powered discord bot
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/ThePieroCV/ChuckBot?style=for-the-badge)
 ![GitHub language count](https://img.shields.io/github/languages/count/ThePieroCV/ChuckBot?style=for-the-badge)
@@ -8,7 +8,7 @@
 
 ![ChuckBot](./assets/lr.gif)
 
-> ChuckBot is a discord bot that brings you different kind of options to make your life easier. Powered by Dis-Snek, this bot is the real snake shady!
+> ChuckBot is a discord bot that brings you different kind of options to make your life easier. Powered by NAFF, this bot is the real naff shady!
 
 ___
 ### Adjustments and Improvements
@@ -25,9 +25,9 @@ ___
 
 Before getting up this bot, be aware of the next :
 
-* Dis-snek uses Python 3.10.x, it is recommended to use virtual environments.
+* NAFF uses Python 3.10.x, it is recommended to use virtual environments.
 * You need FFMPEG installed (On Path, or then pasted on local cloned repo).
-* Read and internalize how dis-snek works on [Dis-snek documentation](https://dis-snek.readthedocs.io).
+* Read and internalize how NAFF works on [NAFF documentation](https://dis-snek.readthedocs.io).
 
 ___
 ## 🚀 Installing Chuck-Bot
@@ -73,7 +73,7 @@ Chuckbot now supports:
 - [X] Genius lyrics
 
 
-To customize ChuckBot, you can add new scales that will be recognized automatically. You can review other premade *.py* Scales to customize it.
+To customize ChuckBot, you can add new extensions that will be recognized automatically. You can review other premade *.py* Extensions to customize it.
 
 ___
 
