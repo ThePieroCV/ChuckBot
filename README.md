@@ -15,11 +15,8 @@ ___
 
 Goals to reach on next updates:
 
-- [x] Scale (Cogs) administrator 
-- [x] Music player
-- [x] Queue system for music player
-- [x] Spotify - Youtube integration
 - [x] Genius Integration - Lyrics
+- [ ] Unified YoutubeDLP interaction to speed up
 - [ ] Pomodoro Tool
 
 ___

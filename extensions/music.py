@@ -1,17 +1,16 @@
 import os
 import re
 
-from dis_snek import (
+from naff import (
     InteractionContext,
     OptionTypes,
     slash_command,
-    Scale,
+    Extension,
     slash_option,
-    Snake,
+    Client,
     SlashCommandChoice,
 )
-from dis_snek.ext.paginators import Paginator
-from dis_snek.api.voice.audio import YTDLAudio
+from naff.ext.paginators import Paginator
 from dotenv import load_dotenv
 from lyricsgenius import Genius
 import spotipy
@@ -20,6 +19,7 @@ import validators
 from youtubesearchpython.__future__ import VideosSearch
 
 from collect.queue import ChuckQueue
+from models.ytdlaudio import YTDLAudio
 
 load_dotenv()
 SPOTIFY_CLIENT = os.getenv("SPOTIFY_CLIENT")
@@ -39,8 +39,8 @@ genius = Genius(
 )
 
 
-class MusicScale(Scale):
-    def __init__(self, bot: Snake):
+class MusicScale(Extension):
+    def __init__(self, bot: Client):
         super().__init__()
         self.queue: ChuckQueue = ChuckQueue([])
         self.repeat: int = 0
